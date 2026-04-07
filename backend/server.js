@@ -10,7 +10,6 @@ const authRoutes = require('./routes/auth');
 
 // MongoDB Connection - Using environment variable
 const mongoUrl = process.env.MONGO_URL;
-console.log("Connecting to MongoDB at:", mongoUrl);
 mongoose.connect(mongoUrl, {
   family: 4,                     // 🔥 fixes DNS issue
   serverSelectionTimeoutMS: 5000 // prevents hanging
