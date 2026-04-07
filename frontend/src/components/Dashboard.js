@@ -223,7 +223,7 @@ const Dashboard = () => {
 
   const tempOk = sensorData.temperature != null && sensorData.temperature >= 20 && sensorData.temperature <= 35;
   const humOk = sensorData.humidity != null && sensorData.humidity >= 40 && sensorData.humidity <= 80;
-  const soilOk = sensorData.soil != null && sensorData.soil >= 30;
+  const soilOk = sensorData.soil != null && sensorData.soil >= 30; // Using percentage from ESP32
   const lightHigh = sensorData.light != null && sensorData.light >= 12000;
   const allOk = tempOk && humOk && soilOk;
 
@@ -330,23 +330,23 @@ const Dashboard = () => {
           />
           <MetricCard
             title="Soil Moisture"
-            value={sensorData.soil}
+            value={sensorData.soil != null ? Math.round(sensorData.soil) : '--'}
             unit="%"
             circleColor={sensorData.soil < 30 ? '#eab308' : '#22c55e'}
             circleMax={100}
-            statusIcon={sensorData.soil < 30 ? 'ℹ' : '✅'}
-            statusText={sensorData.soil < 30 ? 'LOW LEVEL' : 'Good'}
+            statusIcon={sensorData.soil < 30 ? '💧' : '✅'}
+            statusText={sensorData.soil < 30 ? 'NEEDS WATER' : 'Good'}
             statusColor={sensorData.soil < 30 ? '#eab308' : '#2e7d32'}
           />
           <MetricCard
             title="Illumination"
-            value={sensorData.light != null ? Math.round(sensorData.light / 1000) + 'k' : '--'}
+            value={sensorData.light != null ? Math.round(sensorData.light) : '--'}
             unit="lux"
             circleColor="#22c55e"
-            circleMax={100}
+            circleMax={20000}
             centerIcon="☀️"
-            statusIcon=""
-            statusText={lightHigh ? 'High Brightness' : 'Good'}
+            statusIcon={sensorData.light > 12000 ? '🌞' : '🌤️'}
+            statusText={sensorData.light > 12000 ? 'High Brightness' : 'Good Light'}
             statusColor="#2e7d32"
           />
         </div>

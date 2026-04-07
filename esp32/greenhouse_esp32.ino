@@ -89,7 +89,7 @@ SensorData readSensors() {
   
   // Read analog sensors
   int soilRaw = analogRead(SOIL_PIN);
-  data.soilMoisture = map(soilRaw, 4095, 1000, 0, 100); // Reverse mapping: dry=4095->0%, wet=1000->100%
+  data.soilMoisture = map(soilRaw, 4095, 1450, 0, 100); // Reverse mapping: dry=4095->0%, wet=1450->100%
   data.soilMoisture = constrain(data.soilMoisture, 0, 100); // Ensure 0-100 range
   data.lightLevel = map(analogRead(LIGHT_PIN), 0, 4095, 0, 20000);
   
