@@ -56,13 +56,17 @@ let controlData = {
 app.use('/api/sensor', sensorRoutes);
 app.use('/api', authRoutes);
 
-// Control API (legacy - for ESP32)
+// Control API (Frontend updates control state)
 app.post('/api/control', (req, res) => {
-    controlData = req.body;
-    res.send("Control updated");
+    console.log("🎮 Frontend Control Update:", req.body);
+    controlData = { ...controlData, ...req.body };
+    console.log("📊 New Control State:", controlData);
+    res.json({ message: "Control updated", controlState: controlData });
 });
 
+// Control API (ESP32 reads control state)
 app.get('/api/control', (req, res) => {
+    console.log("📱 ESP32 Control Request - Sending state:", controlData);
     res.json(controlData);
 });
 

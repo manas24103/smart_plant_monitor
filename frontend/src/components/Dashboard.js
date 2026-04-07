@@ -182,26 +182,51 @@ const Dashboard = () => {
     }
   };
 
+  const fetchControlState = async () => {
+    try {
+      const data = await controlService.getControlData();
+      console.log('🎛️ Current control state:', data);
+      // Update local state with backend state
+      if (data.pump !== undefined) setPumpActive(data.pump);
+      if (data.fan !== undefined) setFanActive(data.fan > 0);
+    } catch (e) { 
+      console.error('Control state fetch error:', e);
+    }
+  };
+
   useEffect(() => {
     fetchSensorData();
-    const interval = setInterval(fetchSensorData, 5000); // Reduced to 5 seconds
-    return () => clearInterval(interval);
+    fetchControlState(); // Fetch initial control state
+    const sensorInterval = setInterval(fetchSensorData, 5000); // Reduced to 5 seconds
+    const controlInterval = setInterval(fetchControlState, 10000); // Sync control state every 10 seconds
+    return () => {
+      clearInterval(sensorInterval);
+      clearInterval(controlInterval);
+    };
   }, []); // Empty dependency array - runs only once
 
   const togglePump = async () => {
     try {
       const next = !pumpActive;
+      console.log('🎛️ Toggling pump:', next);
       await controlService.updateControl({ pump: next });
       setPumpActive(next);
-    } catch (e) { console.error("Pump toggle error:", e); }
+      console.log('✅ Pump control updated successfully');
+    } catch (e) { 
+      console.error("❌ Pump toggle error:", e); 
+    }
   };
 
   const toggleFan = async () => {
     try {
       const next = !fanActive;
+      console.log('🎛️ Toggling fan:', next, 'Speed:', next ? fanSpeed : 0);
       await controlService.updateControl({ fan: next ? fanSpeed : 0 });
       setFanActive(next);
-    } catch (e) { console.error("Fan toggle error:", e); }
+      console.log('✅ Fan control updated successfully');
+    } catch (e) { 
+      console.error("❌ Fan toggle error:", e); 
+    }
   };
 
   const toggleVents = () => setVentsActive(prev => !prev);
