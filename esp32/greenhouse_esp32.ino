@@ -94,8 +94,8 @@ SensorData readSensors() {
   data.lightLevel = map(analogRead(LIGHT_PIN), 0, 4095, 0, 20000);
   
   // Print sensor values for debugging
-  Serial.printf("Temp: %.1f°C, Humidity: %.1f%%, Soil: %d%%, Light: %d lux\n",
-                data.temperature, data.humidity, data.soilMoisture, data.lightLevel);
+  Serial.printf("Raw ADC: %d, Mapped Soil: %d%%, Temp: %.1f°C, Humidity: %.1f%%, Light: %d lux\n",
+                soilRaw, data.soilMoisture, data.temperature, data.humidity, data.lightLevel);
   
   return data;
 }
@@ -138,8 +138,8 @@ void sendSensorData(SensorData data) {
     DynamicJsonDocument doc(1024);
     doc["temperature"] = data.temperature;
     doc["humidity"] = data.humidity;
-    doc["soil"] = data.soilMoisture;
-    doc["light"] = data.lightLevel;
+    doc["soilMoisture"] = data.soilMoisture; // Send as soilMoisture for backend
+    doc["lightLevel"] = data.lightLevel;     // Send as lightLevel for backend
     
     String jsonString;
     serializeJson(doc, jsonString);
