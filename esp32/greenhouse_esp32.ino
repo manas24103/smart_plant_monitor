@@ -2,6 +2,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
+#include <WiFiClientSecure.h>
 
 // WiFi Configuration
 const char* ssid = "Manas Phone";
@@ -127,9 +128,11 @@ void runSmartAutomation(SensorData data) {
 
 void sendSensorData(SensorData data) {
   if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(server);
-    http.addHeader("Content-Type", "application/json");
+    WiFiClientSecure *client = new WiFiClientSecure();
+    client->setInsecure(); // Skip certificate validation for HTTPS
+    HTTPClient https;
+    https.begin(*client, server);
+    https.addHeader("Content-Type", "application/json");
     
     // Create JSON document
     DynamicJsonDocument doc(1024);
@@ -141,26 +144,46 @@ void sendSensorData(SensorData data) {
     String jsonString;
     serializeJson(doc, jsonString);
     
-    int httpResponseCode = http.POST(jsonString);
+    Serial.print("📤 Sending JSON: ");
+    Serial.println(jsonString);
     
-    if (httpResponseCode > 0) {
-      Serial.println("Sensor data sent successfully");
+    // Send HTTPS POST request
+    int httpCode = https.POST(jsonString);
+    
+    Serial.print("🌐 HTTP Response Code: ");
+    Serial.println(httpCode);
+    
+    String response = https.getString();
+    Serial.print("📡 Server Response: ");
+    Serial.println(response);
+    
+    if (httpCode > 0) {
+      Serial.println("✅ Data sent successfully to server");
     } else {
-      Serial.println("Error sending sensor data: " + String(httpResponseCode));
+      Serial.print("❌ Failed to send data. Error: ");
+      Serial.println(https.errorToString(httpCode));
     }
     
-    http.end();
+    Serial.println("🏁 Data send complete");
+    https.end();
   }
 }
 
 void checkControlCommands() {
   if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(controlUrl);
-    int httpResponseCode = http.GET();
+    WiFiClientSecure *client = new WiFiClientSecure();
+    client->setInsecure(); // Skip certificate validation for HTTPS
+    HTTPClient https;
+    https.begin(*client, controlUrl);
+    int httpResponseCode = https.GET();
+    
+    Serial.print("🎮 Control Response Code: ");
+    Serial.println(httpResponseCode);
     
     if (httpResponseCode == 200) {
-      String payload = http.getString();
+      String payload = https.getString();
+      Serial.print("🎮 Control Payload: ");
+      Serial.println(payload);
       
       // Parse JSON response
       DynamicJsonDocument doc(1024);
@@ -170,14 +193,14 @@ void checkControlCommands() {
         // Manual override controls
         if (doc.containsKey("pump")) {
           manualPumpState = doc["pump"];
+          Serial.println("🔧 Manual pump override: " + String(manualPumpState ? "ON" : "OFF"));
           digitalWrite(PUMP_PIN, manualPumpState ? HIGH : LOW);
-          Serial.println("Manual pump control: " + String(manualPumpState ? "ON" : "OFF"));
         }
         
         if (doc.containsKey("fan")) {
           fanSpeed = doc["fan"];
+          Serial.println("🔧 Manual fan override: " + String(fanSpeed) + "%");
           analogWrite(FAN_PIN, map(fanSpeed, 0, 100, 0, 255));
-          Serial.println("Manual fan speed: " + String(fanSpeed) + "%");
         }
         
         if (doc.containsKey("autoMode")) {
@@ -187,6 +210,7 @@ void checkControlCommands() {
       }
     }
     
-    http.end();
+    Serial.println("🎮 Control check complete");
+    https.end();
   }
 }
