@@ -8,8 +8,8 @@ const char* ssid = "Manas Phone";
 const char* password = "12345667";
 
 // Server URLs
-String server = "http://10.252.254.131:5000/api/sensor";
-String controlUrl = "http://10.252.254.131:5000/api/control";
+String server = "https://smart-plant-monitor.onrender.com/api/sensor";
+String controlUrl = "https://smart-plant-monitor.onrender.com/api/control";
 
 // Pin Definitions
 #define DHT_PIN 4
