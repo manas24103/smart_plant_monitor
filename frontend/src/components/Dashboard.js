@@ -176,6 +176,8 @@ const Dashboard = () => {
   const fetchSensorData = async () => {
     try {
       const data = await sensorService.getSensorData();
+      console.log("🌱 Frontend received sensor data:", data);
+      console.log("🌱 Soil moisture received:", data.soil, "(type:", typeof data.soil, ")");
       setSensorData(data || {});
     } catch (e) { 
       console.error('Sensor data fetch error:', e);

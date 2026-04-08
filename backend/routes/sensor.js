@@ -12,11 +12,24 @@ router.post("/", async (req, res) => {
     const { temperature, humidity, soilMoisture, lightLevel } = req.body;
 
     console.log("🔍 Parsed data:", { temperature, humidity, soilMoisture, lightLevel });
+    console.log("🌱 Soil moisture type:", typeof soilMoisture, "value:", soilMoisture);
+
+    // Validate and constrain soil moisture to 0-100 range
+    let validSoilMoisture = soilMoisture;
+    if (typeof soilMoisture === 'number') {
+      validSoilMoisture = Math.max(0, Math.min(100, soilMoisture));
+      if (validSoilMoisture !== soilMoisture) {
+        console.log("🔧 Soil moisture constrained from", soilMoisture, "to", validSoilMoisture);
+      }
+    } else {
+      console.log("❌ Invalid soil moisture type, setting to 0");
+      validSoilMoisture = 0;
+    }
 
     const newData = new Sensor({
       temperature,
       humidity,
-      soil: soilMoisture,  // Map soilMoisture -> soil
+      soil: validSoilMoisture,  // Store validated soil moisture
       light: lightLevel    // Map lightLevel -> light
     });
 
@@ -55,6 +68,7 @@ router.get("/", async (req, res) => {
     
     console.log("📊 Found sensor documents:", allData.length);
     console.log("📊 Latest data being sent:", latestData);
+    console.log("🌱 Soil moisture in latest data:", latestData.soil, "(type:", typeof latestData.soil, ")");
     
     res.json(latestData);
   } catch (err) {
